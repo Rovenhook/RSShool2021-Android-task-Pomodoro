@@ -36,10 +36,6 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver {
             .getParcelableArrayListExtra<Stopwatch>(STOPWATCHES_LIST) ?: ArrayList<Stopwatch>()
         nextId = intent.getIntExtra(STOPWATCHES_NEXT_ID, 0)
 
-        if (stopwatches.isNotEmpty()) {
-            Log.i("TAG", "EXCHANGE 8 isStarted ${stopwatches[0].isStarted} isFinished ${stopwatches[0].isFinished} startTime ${stopwatches[0].startTime} currentMs ${stopwatches[0].currentMs}")
-        }
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -81,8 +77,11 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver {
     }
 
     override fun delete(id: Int) {
-        timer?.cancel()
-        stopwatches.remove(stopwatches.find { it.id == id })
+        val foundStopwatch = stopwatches.find { it.id == id }
+        if (foundStopwatch?.isStarted ?: false) {
+            timer?.cancel(null)
+        }
+        stopwatches.remove(foundStopwatch)
         stopwatchAdapter.submitList(stopwatches.toList())
     }
 
@@ -99,15 +98,7 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver {
         isStartPressed = isPressed
     }
 
-    override fun printStopwatches() {
-        for (watch in stopwatches) {
-            Log.i("TAG","isFinished ${watch.isFinished} isStarted ${watch.isStarted} startTime ${watch.startTime} currentMs ${watch.currentMs} maxTimeMs ${watch.maxTimeMs} id ${watch.id}")
-        }
-    }
-
     private fun changeStopwatch(id: Int, currentMs: Long?, isStarted: Boolean) {
-        Log.i("TAG", "changeStopwatch")
-        printStopwatches()
         val newTimers = mutableListOf<Stopwatch>()
 
         stopwatches.forEach {
@@ -120,7 +111,6 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver {
                     startTime = System.currentTimeMillis()
                 }
 
-                Log.i("TAG", "MAIN Click starttime = ${startTime}")
                 newTimers.add(
                     Stopwatch(
                         it.id,
@@ -131,7 +121,6 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver {
                         it.isFinished
                     )
                 )
-                Log.i("TAG", "MAIN Click newTimers.starttime = ${newTimers.last().startTime}")
             } else if (isStarted == true) {
                 newTimers.add(Stopwatch(it.id, it.currentMs, it.maxTimeMs, false, 0, it.isFinished))
             } else {
@@ -156,10 +145,7 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver {
                 }
             }
             if (runningIndex >= 0 && stopwatches[runningIndex].currentMs > 0) {
-                Log.i("TAG", "Sent isStarted ${stopwatches[0].isStarted} isFinished ${stopwatches[0].isFinished} startTime ${stopwatches[0].startTime} currentMs ${stopwatches[0].currentMs}")
-
-                Log.i("TAG", "EXCHANGE 1 isStarted ${stopwatches[0].isStarted} isFinished ${stopwatches[0].isFinished} startTime ${stopwatches[0].startTime} currentMs ${stopwatches[0].currentMs}")
-                val startIntent = Intent(this, ForegroundService::class.java)
+               val startIntent = Intent(this, ForegroundService::class.java)
                 startIntent.putExtra(COMMAND_ID, COMMAND_START)
                 startIntent.putParcelableArrayListExtra(STOPWATCHES_LIST, stopwatches)
                 startIntent.putExtra(STOPWATCHES_NEXT_ID, nextId)

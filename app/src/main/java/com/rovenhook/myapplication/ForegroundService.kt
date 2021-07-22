@@ -38,13 +38,11 @@ class ForegroundService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        Log.i("TAG", "onCreate()")
         notificationManager =
             applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.i("TAG", "onStartCommand()")
         processCommand(intent)
         return START_REDELIVER_INTENT
     }
@@ -64,7 +62,6 @@ class ForegroundService : Service() {
                 stopwatches = intent.extras
                     ?.getParcelableArrayList<Stopwatch>(STOPWATCHES_LIST) ?: ArrayList<Stopwatch>()
                 nextId = intent.extras?.getInt(STOPWATCHES_NEXT_ID) ?: 0
-                Log.i("TAG", "EXCHANGE 2 isStarted ${stopwatches[0].isStarted} isFinished ${stopwatches[0].isFinished} startTime ${stopwatches[0].startTime} currentMs ${stopwatches[0].currentMs}")
 
                 commandStart()
             }
@@ -79,7 +76,6 @@ class ForegroundService : Service() {
         if (isServiceStarted) {
             return
         }
-        Log.i("TAG", "commandStart()")
         try {
             moveToStartedState()
             startForegroundAndShowNotification()
@@ -91,25 +87,8 @@ class ForegroundService : Service() {
 
     private fun continueTimer() {
         timer = GlobalScope.launch(Dispatchers.Main) {
-//            Log.i("TAG", "EXCHANGE 3 isStarted ${stopwatches[0].isStarted} isFinished ${stopwatches[0].isFinished} startTime ${stopwatches[0].startTime} currentMs ${stopwatches[0].currentMs}")
-//
-//            var runningStopwatch = stopwatches[runningIndex]
             var text: String
-//
-//            val timePassed = System.currentTimeMillis() - stopwatches[runningIndex].startTime
-//            Log.i("TAG", "Received 2 timePassed ${timePassed}")
-//            Log.i("TAG", "EXCHANGE 4 isStarted ${stopwatches[0].isStarted} isFinished ${stopwatches[0].isFinished} startTime ${stopwatches[0].startTime} currentMs ${stopwatches[0].currentMs}")
-//            stopwatches[runningIndex].currentMs -= timePassed
-//            Log.i("TAG", "Received 2 currentMs after calc ${stopwatches[runningIndex].currentMs}")
-//            Log.i("TAG", "EXCHANGE 5 isStarted ${stopwatches[0].isStarted} isFinished ${stopwatches[0].isFinished} startTime ${stopwatches[0].startTime} currentMs ${stopwatches[0].currentMs}")
 
-//            if (stopwatches[runningIndex].currentMs <= 0L) {
-//                stopwatches[runningIndex].isFinished = true
-//                stopwatches[runningIndex].currentMs = 0L
-//                stopwatches[runningIndex].isStarted = false
-//            }
-
-//            while (!stopwatches[runningIndex].isFinished) {
             while (currentMs > 0) {
  //               text = stopwatches[runningIndex].currentMs.displayTime().dropLast(3)
                 text = currentMs.displayTime().dropLast(3)
@@ -118,15 +97,6 @@ class ForegroundService : Service() {
                     getNotification(text)
                 )
                 delay(INTERVAL)
-//                stopwatches[runningIndex].currentMs -= INTERVAL
-//                Log.i("TAG", "Received 2 currentMs after delay ${stopwatches[runningIndex].currentMs}")
-//                Log.i("TAG", "EXCHANGE 6 isStarted ${stopwatches[0].isStarted} isFinished ${stopwatches[0].isFinished} startTime ${stopwatches[0].startTime} currentMs ${stopwatches[0].currentMs}")
-
-//                if (stopwatches[runningIndex].currentMs <= 0L) {
-//                    stopwatches[runningIndex].isFinished = true
-//                    stopwatches[runningIndex].currentMs = 0L
-//                    stopwatches[runningIndex].isStarted = false
-//                }
                 currentMs -= INTERVAL
             }
             text = "Time's up!"
@@ -141,10 +111,8 @@ class ForegroundService : Service() {
         if (!isServiceStarted) {
             return
         }
-        Log.i("TAG", "commandStop()")
         try {
             timer?.cancel()
-            Log.i("TAG", "Stop timer in foreground")
 
             stopForeground(true)
             stopSelf()
@@ -155,10 +123,8 @@ class ForegroundService : Service() {
 
     private fun moveToStartedState() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Log.d("TAG", "moveToStartedState(): Running on Android O or higher")
             startForegroundService(Intent(this, ForegroundService::class.java))
         } else {
-            Log.d("TAG", "moveToStartedState(): Running on Android N or lower")
             startService(Intent(this, ForegroundService::class.java))
         }
     }
@@ -184,9 +150,6 @@ class ForegroundService : Service() {
     }
 
     private fun getPendingIntent(): PendingIntent? {
-        Log.i("TAG", "Received 3 sending from service isStarted ${stopwatches[0].isStarted} isFinished ${stopwatches[0].isFinished} startTime ${stopwatches[0].startTime} currentMs ${stopwatches[0].currentMs}")
-
-        Log.i("TAG", "EXCHANGE 7 isStarted ${stopwatches[0].isStarted} isFinished ${stopwatches[0].isFinished} startTime ${stopwatches[0].startTime} currentMs ${stopwatches[0].currentMs}")
         val resultIntent = Intent(this, MainActivity::class.java)
         resultIntent.putParcelableArrayListExtra(STOPWATCHES_LIST, stopwatches)
         resultIntent.putExtra(STOPWATCHES_NEXT_ID, nextId)

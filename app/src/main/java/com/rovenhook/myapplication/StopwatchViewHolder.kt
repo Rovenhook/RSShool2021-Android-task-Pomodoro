@@ -17,7 +17,6 @@ class StopwatchViewHolder(
     private var timer: Job? = null
 
     fun bind(stopwatch: Stopwatch) {
-        listener.printStopwatches()
 
         if (stopwatch.isFinished) {
             binding.cardViewTimer.setCardBackgroundColor(resources.getColor(R.color.teal_700))
@@ -85,11 +84,9 @@ class StopwatchViewHolder(
 
     private fun getCountDownJob(stopwatch: Stopwatch): Job {
         val job: Job = GlobalScope.launch(Dispatchers.Main) {
-            Log.i("TAG", "EXCHANGE 9 isStarted ${stopwatch.isStarted} isFinished ${stopwatch.isFinished} startTime ${stopwatch.startTime} currentMs ${stopwatch.currentMs}")
-            val timePassed = System.currentTimeMillis() - stopwatch.startTime
+           val timePassed = System.currentTimeMillis() - stopwatch.startTime
             stopwatch.currentMs -= timePassed
             stopwatch.startTime = System.currentTimeMillis()
-            Log.i("TAG", "EXCHANGE 10 isStarted ${stopwatch.isStarted} isFinished ${stopwatch.isFinished} startTime ${stopwatch.startTime} currentMs ${stopwatch.currentMs}")
 
             while (stopwatch.currentMs > 10L) {
                 delay(UNIT_TEN_MS)
@@ -99,13 +96,9 @@ class StopwatchViewHolder(
                 stopwatch.startTime = System.currentTimeMillis()
             }
             stopwatch.currentMs = 0L
-            Log.i("TAG", "ON FINISH")
-            Log.i("TAG", "ON FINISH MIDDLE")
             listener.showFinishedMessage()
             markAsFinished(stopwatch)
             setFinished(stopwatch)
-            listener.printStopwatches()
-            Log.i("TAG", "ON FINISH FINISH")
         }
         return job
     }

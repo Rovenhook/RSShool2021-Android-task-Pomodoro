@@ -16,6 +16,4 @@ interface StopwatchListener {
     fun exchange(timer: Job?, runningId: Int)
 
     fun isStartPressed(isPressed: Boolean)
-
-    fun printStopwatches()
 }
